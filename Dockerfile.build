@@ -1,0 +1,25 @@
+FROM centos:6.7
+MAINTAINER Raymond Barbiero "raymond.barbiero.dev@gmail.com"
+
+RUN true \
+ && yum -y update \
+ && yum -y install wget \
+ && ln -sf /usr/share/zoneinfo/UTC /etc/localtime
+
+RUN yum -y groupinstall "Development Tools"
+RUN yum -y install rpmdevtools git tar
+RUN yum -y install \
+  http://mirror.centos.org/centos/6/updates/x86_64/Packages/glibc-static-2.12-1.166.el6_7.3.x86_64.rpm \
+  http://mirror.centos.org/centos/6/updates/x86_64/Packages/glibc-devel-2.12-1.166.el6_7.3.x86_64.rpm \
+  http://mirror.centos.org/centos/6/updates/x86_64/Packages/glibc-headers-2.12-1.166.el6_7.3.x86_64.rpm \
+  http://mirror.centos.org/centos/6/updates/x86_64/Packages/glibc-2.12-1.166.el6_7.3.x86_64.rpm \
+  http://mirror.centos.org/centos/6/updates/x86_64/Packages/glibc-common-2.12-1.166.el6_7.3.x86_64.rpm
+
+RUN git clone https://github.com/imeyer/runit-rpm runit-rpm
+RUN cd ./runit-rpm ; sed -i'' -e 's/which/command -v/g' build.sh
+
+ADD docker_entrypoint.sh /docker_entrypoint.sh
+RUN chmod +x /docker_entrypoint.sh
+WORKDIR /runit-rpm
+ENTRYPOINT ["/docker_entrypoint.sh"]
+CMD ["build"]
